@@ -7,7 +7,10 @@ from nltk import pos_tag
 
 def flat(_list):
     """ [(1,2), (3,4)] -> [1, 2, 3, 4]"""
-    return sum([list(item) for item in _list], [])
+    flat_list = []
+    for item in _list:
+        flat_list = flat_list + list(item)
+    return flat_list
 
 
 def is_verb(word):
@@ -16,18 +19,25 @@ def is_verb(word):
     pos_info = pos_tag([word])
     return pos_info[0][1] == 'VB'
 
+
 Path = ''
 
-def get_trees(_path, with_filenames=False, with_file_content=False):
+
+def get_filenames():
     filenames = []
-    trees = []
-    path= Path
+    path = Path
     for dirname, dirs, files in os.walk(path, topdown=True):
         for file in files:
             if file.endswith('.py'):
                 filenames.append(os.path.join(dirname, file))
                 if len(filenames) == 100:
                     break
+    return filenames
+
+
+def get_trees(_path, with_filenames=False, with_file_content=False):
+    trees = []
+    filenames = get_filenames()
     print('total %s files' % len(filenames))
     for filename in filenames:
         with open(filename, 'r', encoding='utf-8') as attempt_handler:
@@ -48,34 +58,31 @@ def get_trees(_path, with_filenames=False, with_file_content=False):
     return trees
 
 
-def get_all_names(tree):
-    return [node.id for node in ast.walk(tree) if isinstance(node, ast.Name)]
-
-
 def get_verbs_from_function_name(function_name):
-    return [word for word in function_name.split('_') if is_verb(word)]
-
-
-def get_all_words_in_path(path):
-    trees = [t for t in get_trees(path) if t]
-    function_names = [f for f in flat([get_all_names(t) for t in trees]) if not (f.startswith('__') and f.endswith('__'))]
-    def split_snake_case_name_to_words(name):
-        return [n for n in name.split('_') if n]
-    return flat([split_snake_case_name_to_words(function_name) for function_name in function_names])
+    verbs = []
+    for word in function_name.split('_'):
+        if is_verb(word):
+            verbs.append(word)
+    return verbs
 
 
 def get_top_verbs_in_path(path, top_size=10):
     global Path
     Path = path
-    trees = [t for t in get_trees(None) if t]
-    fncs = [f for f in flat([[node.name.lower() for node in ast.walk(t) if isinstance(node, ast.FunctionDef)] for t in trees]) if not (f.startswith('__') and f.endswith('__'))]
+    trees = get_trees(None)
+    fncs = []
+    for t in trees:
+        for node in ast.walk(t):
+            if isinstance(node, ast.FunctionDef):
+                fnc_name = node.name.lower()
+                if not (fnc_name.startswith('__') and fnc_name.endswith('__')):
+                    fncs.append(fnc_name)
     print('functions extracted')
-    verbs = flat([get_verbs_from_function_name(function_name) for function_name in fncs])
+    v = []
+    for function_name in fncs:
+        v.append(get_verbs_from_function_name(function_name))
+    verbs = flat(v)
     return collections.Counter(verbs).most_common(top_size)
-def get_top_functions_names_in_path(path, top_size=10):
-    t = get_trees(path)
-    nms = [f for f in flat([[node.name.lower() for node in ast.walk(t) if isinstance(node, ast.FunctionDef)] for t in t]) if not (f.startswith('__') and f.endswith('__'))]
-    return collections.Counter(nms).most_common(top_size)
 
 
 wds = []
@@ -94,4 +101,4 @@ for project in projects:
 top_size = 200
 print('total %s words, %s unique' % (len(wds), len(set(wds))))
 for word, occurence in collections.Counter(wds).most_common(top_size):
-	print(word, occurence)
+    print(word, occurence)
