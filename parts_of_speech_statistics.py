@@ -21,11 +21,11 @@ logging.basicConfig(
 
 
 def flat(_list):
-    """Convert list of tuples into 1 dimentional list.
+    """Convert list of lists into 1 dimentional list.
         [[1,2], [3,4]] -> [1, 2, 3, 4]
 
     Keyword arguments:
-    _list -- list of tuples
+    _list -- list of lists
 
     The return type is `list`.
     """
