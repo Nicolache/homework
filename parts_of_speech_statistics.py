@@ -1,12 +1,23 @@
 import ast
-import os
 import collections
+import os
 
 from nltk import pos_tag
 
 
+maxfilenames = 100
+Path = ''
+
+
 def flat(_list):
-    """ [(1,2), (3,4)] -> [1, 2, 3, 4]"""
+    """Convert list of tuples into 1 dimentional list.\
+        [(1,2), (3,4)] -> [1, 2, 3, 4]
+
+    Keyword arguments:
+    _list -- list of tuples
+
+    The return type is `list`.
+    """
     flat_list = []
     for item in _list:
         flat_list = flat_list + list(item)
@@ -14,28 +25,48 @@ def flat(_list):
 
 
 def is_verb(word):
+    """Check if a string is a verb.
+
+    Keyword arguments:
+    word -- A string that is checked.
+
+    The return type is `bool`.
+    """
     if not word:
         return False
     pos_info = pos_tag([word])
     return pos_info[0][1] == 'VB'
 
 
-Path = ''
-
-
 def get_filenames():
+    """Get all *.py files locations inside what `Path` global variable contains.
+
+    The return type is `list`.
+    """
     filenames = []
     path = Path
     for dirname, dirs, files in os.walk(path, topdown=True):
         for file in files:
             if file.endswith('.py'):
                 filenames.append(os.path.join(dirname, file))
-                if len(filenames) == 100:
+                if len(filenames) == maxfilenames:
                     break
     return filenames
 
 
-def get_trees(_path, with_filenames=False, with_file_content=False):
+def get_trees(with_filenames=False, with_file_content=False):
+    """Return list of ast objects.
+
+    Keyword arguments:
+    with_filenames -- `bool`:\
+        A flag that switches on list of tuples mode on return:\
+        [(filename, tree), ...]
+    with_file_content -- `bool`:\
+        A flag that switches on list of tuples mode on return:\
+        [(filename, main_file_content, tree), ...]
+
+    The return type is `list`.
+    """
     trees = []
     filenames = get_filenames()
     print('total %s files' % len(filenames))
@@ -59,6 +90,13 @@ def get_trees(_path, with_filenames=False, with_file_content=False):
 
 
 def get_verbs_from_function_name(function_name):
+    """Split function name into words and return verbs.
+
+    Keyword arguments:
+    function_name -- A string that contains a function name.
+
+    The return type is `list`.
+    """
     verbs = []
     for word in function_name.split('_'):
         if is_verb(word):
@@ -67,9 +105,17 @@ def get_verbs_from_function_name(function_name):
 
 
 def get_top_verbs_in_path(path, top_size=10):
+    """Return litst of tuples with words and its occurrence.
+
+    Keyword arguments:
+    path -- A project path string.
+    top_size -- Limiting the max number of words.
+
+    The return type is `list`.
+    """
     global Path
     Path = path
-    trees = get_trees(None)
+    trees = get_trees()
     fncs = []
     for t in trees:
         for node in ast.walk(t):
@@ -97,6 +143,7 @@ projects = [
 for project in projects:
     path = os.path.join('.', project)
     wds += get_top_verbs_in_path(path)
+print('WDS' + str(wds))
 
 top_size = 200
 print('total %s words, %s unique' % (len(wds), len(set(wds))))
