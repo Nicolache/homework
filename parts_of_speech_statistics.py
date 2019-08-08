@@ -89,13 +89,12 @@ def get_trees(with_filenames=False, with_file_content=False):
         except SyntaxError as e:
             logging.info(e)
             tree = None
-        if with_filenames:
-            if with_file_content:
-                trees.append((filename, main_file_content, tree))
-            else:
-                trees.append((filename, tree))
-        else:
+        if not with_filenames:
             trees.append(tree)
+        if with_filenames and not with_filenames:
+            trees.append((filename, tree))
+        if with_filenames and with_file_content:
+            trees.append((filename, main_file_content, tree))
     logging.info('trees generated')
     return trees
 
@@ -130,10 +129,13 @@ def get_top_verbs_in_path(path, top_size=10):
     fncs = []
     for t in trees:
         for node in ast.walk(t):
-            if isinstance(node, ast.FunctionDef):
-                fnc_name = node.name.lower()
-                if not (fnc_name.startswith('__') and fnc_name.endswith('__')):
-                    fncs.append(fnc_name)
+            if isinstance(node, ast.FunctionDef)\
+                and not (node.name.lower().startswith('__')\
+                and node.name.lower().endswith('__')):
+                # fnc_name = node.name.lower()
+                # if not (fnc_name.startswith('__') and fnc_name.endswith('__')):
+                # fncs.append(fnc_name)
+                fncs.append(node.name.lower())
     logging.info('functions extracted')
     lists_of_verbs = []
     for function_name in fncs:
