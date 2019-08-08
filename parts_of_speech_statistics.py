@@ -59,10 +59,10 @@ def get_trees(with_filenames=False, with_file_content=False):
 
     Keyword arguments:
     with_filenames -- `bool`:\
-        A flag that switches on list of tuples mode on return:\
+        A flag that switches the list of tuples mode on in return:\
         [(filename, tree), ...]
     with_file_content -- `bool`:\
-        A flag that switches on list of tuples mode on return:\
+        A flag that switches the list of tuples mode on in return:\
         [(filename, main_file_content, tree), ...]
 
     The return type is `list`.
@@ -129,23 +129,3 @@ def get_top_verbs_in_path(path, top_size=10):
         v.append(get_verbs_from_function_name(function_name))
     verbs = flat(v)
     return collections.Counter(verbs).most_common(top_size)
-
-
-wds = []
-projects = [
-    'django',
-    'flask',
-    'pyramid',
-    'reddit',
-    'requests',
-    'sqlalchemy',
-]
-for project in projects:
-    path = os.path.join('.', project)
-    wds += get_top_verbs_in_path(path)
-print('WDS' + str(wds))
-
-top_size = 200
-print('total %s words, %s unique' % (len(wds), len(set(wds))))
-for word, occurence in collections.Counter(wds).most_common(top_size):
-    print(word, occurence)
