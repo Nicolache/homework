@@ -1,7 +1,7 @@
 # homework
 Homework to check.
 This script makes some functions words statistics in given projects.
-## An example of using or the script. ##
+## An example of using the script. ##
 
     import collections
     import os

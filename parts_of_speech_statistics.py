@@ -1,5 +1,6 @@
 import ast
 import collections
+import logging
 import os
 
 from nltk import pos_tag
@@ -7,6 +8,12 @@ from nltk import pos_tag
 
 maxfilenames = 100
 Path = ''
+log_path_name = './logs.log'
+loglevel = logging.INFO
+#loglevel = logging.DEBUG
+logger = logging.getLogger("")
+logger.setLevel(loglevel)
+logging.basicConfig(filename = log_path_name, level = loglevel, format = '%(asctime)s - %(levelname)s - %(message)s')
 
 
 def flat(_list):
@@ -69,14 +76,14 @@ def get_trees(with_filenames=False, with_file_content=False):
     """
     trees = []
     filenames = get_filenames()
-    print('total %s files' % len(filenames))
+    logging.info('total %s files' % len(filenames))
     for filename in filenames:
         with open(filename, 'r', encoding='utf-8') as attempt_handler:
             main_file_content = attempt_handler.read()
         try:
             tree = ast.parse(main_file_content)
         except SyntaxError as e:
-            print(e)
+            logging.info(e)
             tree = None
         if with_filenames:
             if with_file_content:
@@ -85,7 +92,7 @@ def get_trees(with_filenames=False, with_file_content=False):
                 trees.append((filename, tree))
         else:
             trees.append(tree)
-    print('trees generated')
+    logging.info('trees generated')
     return trees
 
 
@@ -123,7 +130,7 @@ def get_top_verbs_in_path(path, top_size=10):
                 fnc_name = node.name.lower()
                 if not (fnc_name.startswith('__') and fnc_name.endswith('__')):
                     fncs.append(fnc_name)
-    print('functions extracted')
+    logging.info('functions extracted')
     v = []
     for function_name in fncs:
         v.append(get_verbs_from_function_name(function_name))
