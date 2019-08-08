@@ -21,7 +21,7 @@ logging.basicConfig(
 
 
 def flat(_list):
-    """Convert list of tuples into 1 dimentional list.\
+    """Convert list of tuples into 1 dimentional list.
         [[1,2], [3,4]] -> [1, 2, 3, 4]
 
     Keyword arguments:
@@ -69,11 +69,11 @@ def get_trees(with_filenames=False, with_file_content=False):
     """Return list of ast objects.
 
     Keyword arguments:
-    with_filenames -- `bool`:\
-        A flag that switches the list of tuples mode on in return:\
+    with_filenames -- `bool`:
+        A flag that switches the list of tuples mode on in return:
         [(filename, tree), ...]
-    with_file_content -- `bool`:\
-        A flag that switches the list of tuples mode on in return:\
+    with_file_content -- `bool`:
+        A flag that switches the list of tuples mode on in return:
         [(filename, main_file_content, tree), ...]
 
     The return type is `list`.
