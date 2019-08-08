@@ -10,15 +10,19 @@ maxfilenames = 100
 Path = ''
 log_path_name = './logs.log'
 loglevel = logging.INFO
-#loglevel = logging.DEBUG
+# loglevel = logging.DEBUG
 logger = logging.getLogger("")
 logger.setLevel(loglevel)
-logging.basicConfig(filename = log_path_name, level = loglevel, format = '%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    filename=log_path_name,
+    level=loglevel,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+)
 
 
 def flat(_list):
     """Convert list of tuples into 1 dimentional list.\
-        [(1,2), (3,4)] -> [1, 2, 3, 4]
+        [[1,2], [3,4]] -> [1, 2, 3, 4]
 
     Keyword arguments:
     _list -- list of tuples
@@ -131,8 +135,9 @@ def get_top_verbs_in_path(path, top_size=10):
                 if not (fnc_name.startswith('__') and fnc_name.endswith('__')):
                     fncs.append(fnc_name)
     logging.info('functions extracted')
-    v = []
+    lists_of_verbs = []
     for function_name in fncs:
-        v.append(get_verbs_from_function_name(function_name))
-    verbs = flat(v)
+        lists_of_verbs.append(get_verbs_from_function_name(function_name))
+    verbs = flat(lists_of_verbs)
+    logging.debug(lists_of_verbs)
     return collections.Counter(verbs).most_common(top_size)
