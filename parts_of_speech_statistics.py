@@ -20,19 +20,18 @@ logging.basicConfig(
 )
 
 
-def flat(_list):
-    """Convert list of lists into 1 dimentional list.
-        [[1,2], [3,4]] -> [1, 2, 3, 4]
+def flat(folded_generator_with_verbs):
+    """Generating verbs with folded generators
+        ((1,2), (3,4)) -> (1, 2, 3, 4)
 
     Keyword arguments:
-    _list -- list of lists
+    folded_generator_with_verbs -- generator of generators.
 
-    The return type is `list`.
+    Returns a generator.
     """
-    flat_list = []
-    for item in _list:
-        flat_list = flat_list + list(item)
-    return flat_list
+    for item in folded_generator_with_verbs:
+        for folded_item in item:
+            yield folded_item
 
 
 def is_verb(word):
@@ -52,7 +51,7 @@ def is_verb(word):
 def get_filenames():
     """Get all *.py files locations inside what `Path` global variable contains.
 
-    The return is a generator.
+    Returns a generator.
     """
     filenames = []
     path = Path
@@ -63,21 +62,20 @@ def get_filenames():
 
 
 def get_trees(with_filenames=False, with_file_content=False):
-    """Return list of ast objects.
+    """Generates ast objects, or ast objects in tuple with filenames, and file content.
 
     Keyword arguments:
     with_filenames -- `bool`:
-        A flag that switches the list of tuples mode on in return:
-        [(filename, tree), ...]
+        A flag that switches "with filenames" return mode on:
+        ((filename, tree), ...)
     with_file_content -- `bool`:
-        A flag that switches the list of tuples mode on in return:
-        [(filename, main_file_content, tree), ...]
+        A flag that switches "with file content" return mode on:
+        ((filename, main_file_content, tree), ...)
 
-    The return is a generator.
+    Returns a generator.
     """
     trees = []
     filenames = get_filenames()
-    # logging.info('total %s files' % len(filenames))
     filenames_counter = 0
     for filename in filenames:
         with open(filename, 'r', encoding='utf-8') as attempt_handler:
@@ -104,26 +102,52 @@ def get_verbs_from_function_name(function_name):
     Keyword arguments:
     function_name -- A string that contains a function name.
 
-    The return type is `list`.
+    Returns a generator.
     """
-    verbs = []
     for word in function_name.split('_'):
         if is_verb(word):
-            verbs.append(word)
-    return verbs
+            yield word
 
 
 def generate_nodes_out_of_trees(trees):
-    """Return all nodes from code.
+    """Return all nodes of code.
 
     Keyword arguments:
-    trees -- Trees with some computer language code.
+    trees -- Trees of some computer language code.
 
-    The return is a generator.
+    Returns a generator.
     """
     for tree in trees:
         for node in ast.walk(tree):
             yield node
+
+
+def select_function_names_from_nodes(nodes):
+    """Extracts from nodes all the function names in lowercase.
+
+    Keyword arguments:
+    nodes -- Nodes of some computer language code.
+
+    Returns a generator.
+    """
+    for node in nodes:            
+        if isinstance(node, ast.FunctionDef) and\
+            not (node.name.lower().startswith('__') and
+            node.name.lower().endswith('__')):
+                yield node.name.lower()
+
+
+def select_verbs_from_function_names(function_names_in_lower_case):
+    """Generates verbs out of function names plenty.
+
+    Keyword arguments:
+    path -- A project path string.
+    top_size -- Limiting the max number of words.
+
+    Returns a generator.
+    """
+    for function_name in function_names_in_lower_case:    
+        yield get_verbs_from_function_name(function_name)
 
 
 def get_top_verbs_in_path(path, top_size=10):
@@ -138,16 +162,8 @@ def get_top_verbs_in_path(path, top_size=10):
     global Path
     Path = path
     nodes = generate_nodes_out_of_trees(get_trees())
-    fncs = []
-    for node in nodes:
-        if isinstance(node, ast.FunctionDef) and\
-            not (node.name.lower().startswith('__') and
-            node.name.lower().endswith('__')):
-                fncs.append(node.name.lower())
+    function_names_in_lower_case = select_function_names_from_nodes(nodes)
     logging.info('functions extracted')
-    lists_of_verbs = []
-    for function_name in fncs:
-        lists_of_verbs.append(get_verbs_from_function_name(function_name))
+    lists_of_verbs = select_verbs_from_function_names(function_names_in_lower_case)
     verbs = flat(lists_of_verbs)
-    logging.debug(lists_of_verbs)
     return collections.Counter(verbs).most_common(top_size)
