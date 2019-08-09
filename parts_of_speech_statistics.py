@@ -49,7 +49,7 @@ def is_verb(word):
 
 
 def get_filenames():
-    """Get all *.py files locations inside what `Path` global variable contains.
+    """Get all *.py files locations inside `Path` location. `Path` is a global variable.
 
     Returns a generator.
     """
@@ -62,7 +62,7 @@ def get_filenames():
 
 
 def get_trees(with_filenames=False, with_file_content=False):
-    """Generates ast objects, or ast objects in tuple with filenames, and file content.
+    """Generates ast objects, or ast objects in tuple with filenames, and file contents.
 
     Keyword arguments:
     with_filenames -- `bool`:
