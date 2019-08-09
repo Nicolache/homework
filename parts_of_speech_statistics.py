@@ -52,17 +52,14 @@ def is_verb(word):
 def get_filenames():
     """Get all *.py files locations inside what `Path` global variable contains.
 
-    The return type is `list`.
+    The return is a generator.
     """
     filenames = []
     path = Path
     for dirname, dirs, files in os.walk(path, topdown=True):
         for file in files:
-            if file.endswith('.py'):
-                filenames.append(os.path.join(dirname, file))
-                if len(filenames) == maxfilenames:
-                    break
-    return filenames
+            if file.endswith('.py') and len(filenames) < maxfilenames:
+                yield os.path.join(dirname, file)
 
 
 def get_trees(with_filenames=False, with_file_content=False):
@@ -76,27 +73,29 @@ def get_trees(with_filenames=False, with_file_content=False):
         A flag that switches the list of tuples mode on in return:
         [(filename, main_file_content, tree), ...]
 
-    The return type is `list`.
+    The return is a generator.
     """
     trees = []
     filenames = get_filenames()
-    logging.info('total %s files' % len(filenames))
+    # logging.info('total %s files' % len(filenames))
+    filenames_counter = 0
     for filename in filenames:
         with open(filename, 'r', encoding='utf-8') as attempt_handler:
             main_file_content = attempt_handler.read()
         try:
             tree = ast.parse(main_file_content)
+            filenames_counter += 1
         except SyntaxError as e:
             logging.info(e)
             tree = None
         if not with_filenames:
-            trees.append(tree)
+            yield tree
         if with_filenames and not with_filenames:
-            trees.append((filename, tree))
+            yield (filename, tree)
         if with_filenames and with_file_content:
-            trees.append((filename, main_file_content, tree))
+            yield (filename, main_file_content, tree)
+    logging.info('Total {} files'.format(filenames_counter))
     logging.info('trees generated')
-    return trees
 
 
 def get_verbs_from_function_name(function_name):
@@ -114,6 +113,19 @@ def get_verbs_from_function_name(function_name):
     return verbs
 
 
+def generate_nodes_out_of_trees(trees):
+    """Return all nodes from code.
+
+    Keyword arguments:
+    trees -- Trees with some computer language code.
+
+    The return is a generator.
+    """
+    for tree in trees:
+        for node in ast.walk(tree):
+            yield node
+
+
 def get_top_verbs_in_path(path, top_size=10):
     """Return litst of tuples with words and its occurrence.
 
@@ -125,16 +137,12 @@ def get_top_verbs_in_path(path, top_size=10):
     """
     global Path
     Path = path
-    trees = get_trees()
+    nodes = generate_nodes_out_of_trees(get_trees())
     fncs = []
-    for t in trees:
-        for node in ast.walk(t):
-            if isinstance(node, ast.FunctionDef)\
-                and not (node.name.lower().startswith('__')\
-                and node.name.lower().endswith('__')):
-                # fnc_name = node.name.lower()
-                # if not (fnc_name.startswith('__') and fnc_name.endswith('__')):
-                # fncs.append(fnc_name)
+    for node in nodes:
+        if isinstance(node, ast.FunctionDef) and\
+            not (node.name.lower().startswith('__') and
+            node.name.lower().endswith('__')):
                 fncs.append(node.name.lower())
     logging.info('functions extracted')
     lists_of_verbs = []
