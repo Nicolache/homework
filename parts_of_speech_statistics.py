@@ -53,11 +53,12 @@ def get_filenames():
 
     Returns a generator.
     """
-    filenames = []
+    filenames_counter = 0
     path = Path
     for dirname, dirs, files in os.walk(path, topdown=True):
         for file in files:
-            if file.endswith('.py') and len(filenames) < maxfilenames:
+            if file.endswith('.py') and filenames_counter < maxfilenames:
+                filenames_counter += 1
                 yield os.path.join(dirname, file)
 
 
@@ -74,7 +75,6 @@ def get_trees(with_filenames=False, with_file_content=False):
 
     Returns a generator.
     """
-    trees = []
     filenames = get_filenames()
     filenames_counter = 0
     for filename in filenames:
