@@ -1,23 +1,29 @@
 import ast
 import collections
-import logging
+# import logging
 import os
 
 from nltk import pos_tag
+from vcstools import get_vcs_client
+
+from command_line_arguments import *
+from variables import *
 
 
-maxfilenames = 100
-Path = ''
-log_path_name = './logs.log'
-loglevel = logging.INFO
-# loglevel = logging.DEBUG
-logger = logging.getLogger("")
-logger.setLevel(loglevel)
-logging.basicConfig(
-    filename=log_path_name,
-    level=loglevel,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-)
+def delete_repos_directories():
+    for directory in os.listdir(repos_local_path):
+        os.system('rm -rf ' + repos_local_path + '/' + directory)
+
+
+def repo_clone(https_url, vcs_type):
+    reponame = https_url.rsplit('/', 1)[1]
+    client = get_vcs_client(vcs_type, repos_local_path + reponame)
+    client.checkout(https_url)
+
+
+def clone_all():
+    for url_and_vcstype in repos_to_clone_urls:
+        repo_clone(url_and_vcstype[0], url_and_vcstype[1])
 
 
 def flat(folded_generator_with_verbs):
@@ -167,3 +173,20 @@ def get_top_verbs_in_path(path, top_size=10):
     lists_of_verbs = select_verbs_from_function_names(function_names_in_lower_case)
     verbs = flat(lists_of_verbs)
     return collections.Counter(verbs).most_common(top_size)
+
+
+def main():
+    args = parser.parse_args()
+    logging.debug(parser)
+    logging.debug(args)
+
+    if args.clear:
+        delete_repos_directories()
+    
+    if args.clone:
+        clone_all()
+
+
+if __name__ == "__main__":
+
+    main()
