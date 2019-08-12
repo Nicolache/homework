@@ -6,16 +6,15 @@ import os
 from nltk import pos_tag
 
 
-maxfilenames = 100
-Path = ''
-log_path_name = './logs.log'
-loglevel = logging.INFO
-# loglevel = logging.DEBUG
+MAXFILENAMES = 100
+LOG_PATH_NAME = './logs.log'
+LOGLEVEL = logging.INFO
+# LOGLEVEL = logging.DEBUG
 logger = logging.getLogger("")
-logger.setLevel(loglevel)
+logger.setLevel(LOGLEVEL)
 logging.basicConfig(
-    filename=log_path_name,
-    level=loglevel,
+    filename=LOG_PATH_NAME,
+    level=LOGLEVEL,
     format='%(asctime)s - %(levelname)s - %(message)s',
 )
 
@@ -48,21 +47,20 @@ def is_verb(word):
     return pos_info[0][1] == 'VB'
 
 
-def get_filenames():
+def get_filenames(path):
     """Get all *.py files locations inside `Path` location. `Path` is a global variable.
 
     Returns a generator.
     """
     filenames_counter = 0
-    path = Path
     for dirname, dirs, files in os.walk(path, topdown=True):
         for file in files:
-            if file.endswith('.py') and filenames_counter < maxfilenames:
+            if file.endswith('.py') and filenames_counter < MAXFILENAMES:
                 filenames_counter += 1
                 yield os.path.join(dirname, file)
 
 
-def get_trees(with_filenames=False, with_file_content=False):
+def get_trees(path, with_filenames=False, with_file_content=False):
     """Generates ast objects, or ast objects in tuple with filenames, and file contents.
 
     Keyword arguments:
@@ -75,7 +73,7 @@ def get_trees(with_filenames=False, with_file_content=False):
 
     Returns a generator.
     """
-    filenames = get_filenames()
+    filenames = get_filenames(path)
     filenames_counter = 0
     for filename in filenames:
         with open(filename, 'r', encoding='utf-8') as attempt_handler:
@@ -84,7 +82,7 @@ def get_trees(with_filenames=False, with_file_content=False):
             tree = ast.parse(main_file_content)
             filenames_counter += 1
         except SyntaxError as e:
-            logging.info(e)
+            logging.warning(e)
             tree = None
         if not with_filenames:
             yield tree
@@ -141,8 +139,7 @@ def select_verbs_from_function_names(function_names_in_lower_case):
     """Generates verbs out of function names plenty.
 
     Keyword arguments:
-    path -- A project path string.
-    top_size -- Limiting the max number of words.
+    function_names_in_lower_case -- Names plenty.
 
     Returns a generator.
     """
@@ -154,16 +151,27 @@ def get_top_verbs_in_path(path, top_size=10):
     """Return litst of tuples with words and its occurrence.
 
     Keyword arguments:
-    path -- A project path string.
     top_size -- Limiting the max number of words.
 
     The return type is `list`.
     """
-    global Path
-    Path = path
-    nodes = generate_nodes_out_of_trees(get_trees())
+    nodes = generate_nodes_out_of_trees(get_trees(path))
     function_names_in_lower_case = select_function_names_from_nodes(nodes)
     logging.info('functions extracted')
     lists_of_verbs = select_verbs_from_function_names(function_names_in_lower_case)
     verbs = flat(lists_of_verbs)
     return collections.Counter(verbs).most_common(top_size)
+
+
+def get_top_verbs_in_projects(projects):
+    words = []
+    for project in projects:
+        path = os.path.join('.', project)
+        words += get_top_verbs_in_path(path)
+    return words
+
+
+def report_into_log(words, top_size=200):
+    logging.info('total %s words, %s unique' % (len(words), len(set(words))))
+    for word, occurence in collections.Counter(words).most_common(top_size):
+        logging.info('{}, {}'.format(word, occurence))
