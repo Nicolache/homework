@@ -1,8 +1,9 @@
 *
 !.gitignore
 !command_line_arguments.py
-!requirements.txt
-!README.md
+!output_format.py
 !parts_of_speech_statistics.py
+!requirements.txt
 !variables.py
 !LICENSE
+!README.md
