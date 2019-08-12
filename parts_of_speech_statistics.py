@@ -151,7 +151,7 @@ def select_variable_names_from_nodes(nodes):
 
     Returns a generator.
     """
-    for node in ast.walk(tree):
+    for node in nodes:
         if isinstance(node, ast.Name):
             yield node.id.lower()
 
