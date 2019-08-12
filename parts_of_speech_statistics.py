@@ -48,7 +48,9 @@ def is_verb(word):
 
 
 def get_filenames(path):
-    """Get all *.py files locations inside `Path` location. `Path` is a global variable.
+    """Get all *.py files locations inside `path` location.
+
+    path -- A path string.
 
     Returns a generator.
     """
@@ -64,6 +66,7 @@ def get_trees(path, with_filenames=False, with_file_content=False):
     """Generates ast objects, or ast objects in tuple with filenames, and file contents.
 
     Keyword arguments:
+    path -- A path string.
     with_filenames -- `bool`:
         A flag that switches "with filenames" return mode on:
         ((filename, tree), ...)
@@ -151,6 +154,7 @@ def get_top_verbs_in_path(path, top_size=10):
     """Return litst of tuples with words and its occurrence.
 
     Keyword arguments:
+    path -- A path string.
     top_size -- Limiting the max number of words.
 
     The return type is `list`.
@@ -164,6 +168,13 @@ def get_top_verbs_in_path(path, top_size=10):
 
 
 def get_top_verbs_in_projects(projects):
+    """Return litst of tuples with words and their occurrence.
+
+    Keyword arguments:
+    projects -- list of path strings.
+
+    The return type is `list`.
+    """
     words = []
     for project in projects:
         path = os.path.join('.', project)
@@ -172,6 +183,12 @@ def get_top_verbs_in_projects(projects):
 
 
 def report_into_log(words, top_size=200):
+    """Writes a formatted report into log.
+
+    Keyword arguments:
+    words -- list of tuples: (wordname, quantity)
+    top_size -- Limiting the max number of words.
+    """
     logging.info('total %s words, %s unique' % (len(words), len(set(words))))
     for word, occurence in collections.Counter(words).most_common(top_size):
         logging.info('{}, {}'.format(word, occurence))
