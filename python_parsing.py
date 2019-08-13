@@ -1,6 +1,5 @@
 import ast
 import os
-# from parts_of_speech_statistics import get_filenames
 from variables import logging, MAXFILENAMES
 
 

@@ -46,4 +46,11 @@ parser.add_argument(
     help="A part of speech. A choice between nouns,\
         and verbs statistics. Verbs is default.",
 )
+parser.add_argument(
+    '-l',
+    '--language',
+    choices=['python', 'basic', 'cobol'],
+    default='python',
+    help="Parsing language choice.",
+)
 args = parser.parse_args()
