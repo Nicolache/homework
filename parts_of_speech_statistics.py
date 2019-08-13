@@ -4,14 +4,14 @@ import os
 from nltk import pos_tag
 from vcstools import get_vcs_client
 
-from command_line_arguments import *
-from output_format import *
+from command_line_arguments import args
+from output_format import console_json_csv_output
 from python_parsing import\
     get_trees,\
     generate_nodes_out_of_trees,\
     select_variable_names_from_nodes,\
     select_function_names_from_nodes
-from variables import *
+from variables import repos_local_path, logging, abbreviation_sets
 
 
 def delete_repos_directories():
@@ -242,7 +242,6 @@ def get_top_pos_in_projects(projects):
 #         logging.info('{}, {}'.format(word, occurence))
 
 def main():
-    logging.debug(parser)
     logging.debug(args)
 
     if args.clear:
