@@ -35,13 +35,15 @@ parser.add_argument(
     '--search_in',
     choices=['functions', 'variables'],
     default='functions',
-    help="Search parts of speech in functions names, or variables names. Functions is default.",
+    help="Search parts of speech in functions names,\
+        or variables names. Functions is default.",
 )
 parser.add_argument(
     '-p',
     '--part',
     choices=['verbs', 'nouns'],
     default='verbs',
-    help="A part of speech. A choice between nouns, and verbs statistics. Verbs is default.",
+    help="A part of speech. A choice between nouns,\
+        and verbs statistics. Verbs is default.",
 )
 args = parser.parse_args()
