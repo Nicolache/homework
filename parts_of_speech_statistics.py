@@ -1,4 +1,3 @@
-import ast
 import collections
 import os
 
@@ -7,7 +6,11 @@ from vcstools import get_vcs_client
 
 from command_line_arguments import *
 from output_format import *
-from python_parsing import get_trees
+from python_parsing import\
+    get_trees,\
+    generate_nodes_out_of_trees,\
+    select_variable_names_from_nodes,\
+    select_function_names_from_nodes
 from variables import *
 
 
@@ -119,17 +122,17 @@ def get_poss_from_name(name, abbreviations):
             yield word
 
 
-def generate_nodes_out_of_trees(trees):
-    """Return all nodes of code.
-
-    Keyword arguments:
-    trees -- Trees of some computer language code.
-
-    Returns a generator.
-    """
-    for tree in trees:
-        for node in ast.walk(tree):
-            yield node
+# def generate_nodes_out_of_trees(trees):
+#     """Return all nodes of code.
+# 
+#     Keyword arguments:
+#     trees -- Trees of some computer language code.
+# 
+#     Returns a generator.
+#     """
+#     for tree in trees:
+#         for node in ast.walk(tree):
+#             yield node
 
 
 def select_names_from_nodes(nodes, search_in):
@@ -147,32 +150,32 @@ def select_names_from_nodes(nodes, search_in):
     return names
 
 
-def select_variable_names_from_nodes(nodes):
-    """Extracts from nodes all the variables names in lowercase.
+# def select_variable_names_from_nodes(nodes):
+#     """Extracts from nodes all the variables names in lowercase.
+# 
+#     Keyword arguments:
+#     nodes -- Nodes of some computer language code.
+# 
+#     Returns a generator.
+#     """
+#     for node in nodes:
+#         if isinstance(node, ast.Name):
+#             yield node.id.lower()
 
-    Keyword arguments:
-    nodes -- Nodes of some computer language code.
 
-    Returns a generator.
-    """
-    for node in nodes:
-        if isinstance(node, ast.Name):
-            yield node.id.lower()
-
-
-def select_function_names_from_nodes(nodes):
-    """Extracts from nodes all the function names in lowercase.
-
-    Keyword arguments:
-    nodes -- Nodes of some computer language code.
-
-    Returns a generator.
-    """
-    for node in nodes:
-        if isinstance(node, ast.FunctionDef) and\
-            not (node.name.lower().startswith('__') and
-            node.name.lower().endswith('__')):
-                yield node.name.lower()
+# def select_function_names_from_nodes(nodes):
+#     """Extracts from nodes all the function names in lowercase.
+# 
+#     Keyword arguments:
+#     nodes -- Nodes of some computer language code.
+# 
+#     Returns a generator.
+#     """
+#     for node in nodes:
+#         if isinstance(node, ast.FunctionDef) and\
+#             not (node.name.lower().startswith('__') and
+#             node.name.lower().endswith('__')):
+#                 yield node.name.lower()
 
 
 def select_pos_from_names(names_in_lower_case, abbreviations):
@@ -201,21 +204,12 @@ def get_top_pos_in_path(path, top_size=10):
 
     The return type is `list`.
     """
-    # this is from the 2nd homework
     nodes = generate_nodes_out_of_trees(get_trees(path)) #
     names_in_lower_case = select_names_from_nodes(nodes, args.search_in)
     logging.info('Names extracted.')
     parts_of_speech = select_pos_from_names(names_in_lower_case, abbreviation_sets[args.part])
     unfolded_parts_of_speech = flat(parts_of_speech)
     return collections.Counter(unfolded_parts_of_speech).most_common(top_size)
-
-    # # this is from the final 1st homework pass without Path global variable
-    # nodes = generate_nodes_out_of_trees(get_trees(path))
-    # function_names_in_lower_case = select_function_names_from_nodes(nodes)
-    # logging.info('functions extracted')
-    # lists_of_verbs = select_verbs_from_function_names(function_names_in_lower_case)
-    # verbs = flat(lists_of_verbs)
-    # return collections.Counter(verbs).most_common(top_size)
 
 
 def get_top_pos_in_projects(projects):

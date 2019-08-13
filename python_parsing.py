@@ -53,3 +53,44 @@ def get_trees(path, with_filenames=False, with_file_content=False):
             yield (filename, main_file_content, tree)
     logging.info('Total {} files'.format(filenames_counter))
     logging.info('trees generated')
+
+
+def generate_nodes_out_of_trees(trees):
+    """Return all nodes of code.
+
+    Keyword arguments:
+    trees -- Trees of some computer language code.
+
+    Returns a generator.
+    """
+    for tree in trees:
+        for node in ast.walk(tree):
+            yield node
+
+
+def select_function_names_from_nodes(nodes):
+    """Extracts from nodes all the function names in lowercase.
+
+    Keyword arguments:
+    nodes -- Nodes of some computer language code.
+
+    Returns a generator.
+    """
+    for node in nodes:
+        if isinstance(node, ast.FunctionDef) and\
+            not (node.name.lower().startswith('__') and
+            node.name.lower().endswith('__')):
+                yield node.name.lower()
+
+
+def select_variable_names_from_nodes(nodes):
+    """Extracts from nodes all the variables names in lowercase.
+
+    Keyword arguments:
+    nodes -- Nodes of some computer language code.
+
+    Returns a generator.
+    """
+    for node in nodes:
+        if isinstance(node, ast.Name):
+            yield node.id.lower()
