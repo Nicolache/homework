@@ -237,7 +237,7 @@ def get_top_pos_in_projects(projects):
 #     # its needed for compatibility
 # def report_into_log(words, top_size=200):
 #     """Writes a formatted report into log.
-# 
+#
 #     Keyword arguments:
 #     words -- list of tuples: (wordname, quantity)
 #     top_size -- Limiting the max number of words.
@@ -257,7 +257,7 @@ def main():
         clone_all()
 
     projects = projects_list()
-    words = get_top_verbs_in_projects(projects)
+    words = get_top_pos_in_projects(projects)
     console_json_csv_output(words)
 
 
