@@ -10,10 +10,24 @@ from output_format import *
 from variables import *
 
 
+# this was moved into variables.py file
+# canstant variables renaming is needed in that file
+# MAXFILENAMES = 100
+# LOG_PATH_NAME = './logs.log'
+# LOGLEVEL = logging.INFO
+# # LOGLEVEL = logging.DEBUG
+# logger = logging.getLogger("")
+# logger.setLevel(LOGLEVEL)
+# logging.basicConfig(
+#     filename=LOG_PATH_NAME,
+#     level=LOGLEVEL,
+#     format='%(asctime)s - %(levelname)s - %(message)s',
+# )
+
+
 def delete_repos_directories():
     for directory in os.listdir(repos_local_path):
         os.system('rm -rf ' + repos_local_path + '/' + directory)
-
 
 def repo_clone(https_url, vcs_type):
     reponame = https_url.rsplit('/', 1)[1]
@@ -53,24 +67,27 @@ def word_belongs_to_parts_of_speech(word, abbreviations):
     return pos_info[0][1] in abbreviations
 
 
-def get_filenames():
-    """Get all *.py files locations inside `Path` location. `Path` is a global variable.
+def get_filenames(path):
+    """Get all *.py files locations inside `path` location.
+
+    path -- A path string.
 
     Returns a generator.
     """
     filenames_counter = 0
-    path = Path
     for dirname, dirs, files in os.walk(path, topdown=True):
         for file in files:
-            if file.endswith('.py') and filenames_counter < maxfilenames:
+            if file.endswith('.py') and filenames_counter < MAXFILENAMES:
                 filenames_counter += 1
                 yield os.path.join(dirname, file)
 
 
-def get_trees(with_filenames=False, with_file_content=False):
-    """Generates ast objects, or ast objects in tuple with filenames, and file contents.
+def get_trees(path, with_filenames=False, with_file_content=False):
+    """Generates ast objects, or ast objects in tuple
+    with filenames, and file contents.
 
     Keyword arguments:
+    path -- A path string.
     with_filenames -- `bool`:
         A flag that switches "with filenames" return mode on:
         ((filename, tree), ...)
@@ -80,7 +97,7 @@ def get_trees(with_filenames=False, with_file_content=False):
 
     Returns a generator.
     """
-    filenames = get_filenames()
+    filenames = get_filenames(path)
     filenames_counter = 0
     for filename in filenames:
         with open(filename, 'r', encoding='utf-8') as attempt_handler:
@@ -89,7 +106,7 @@ def get_trees(with_filenames=False, with_file_content=False):
             tree = ast.parse(main_file_content)
             filenames_counter += 1
         except SyntaxError as e:
-            logging.info(e)
+            logging.warning(e)
             tree = None
         if not with_filenames:
             yield tree
@@ -164,7 +181,7 @@ def select_function_names_from_nodes(nodes):
 
     Returns a generator.
     """
-    for node in nodes:            
+    for node in nodes:
         if isinstance(node, ast.FunctionDef) and\
             not (node.name.lower().startswith('__') and
             node.name.lower().endswith('__')):
@@ -183,7 +200,7 @@ def select_pos_from_names(names_in_lower_case, abbreviations):
     """
     logging.debug('select_pos_from_names: arg:names_in_lower_case - generator select_function_names_from_nodes')
     parts_of_speech = []
-    for name in names_in_lower_case:    
+    for name in names_in_lower_case:
         yield get_poss_from_name(name, abbreviations)
 
 
@@ -191,20 +208,59 @@ def get_top_verbs_in_path(path, top_size=10):
     """Return litst of tuples with words and its occurrence.
 
     Keyword arguments:
-    path -- A project path string.
+    path -- A path string.
     top_size -- Limiting the max number of words.
 
     The return type is `list`.
     """
-    global Path
-    Path = path
-    nodes = generate_nodes_out_of_trees(get_trees())
+    # this is from the 2nd homework
+    nodes = generate_nodes_out_of_trees(get_trees(path)) #
     names_in_lower_case = select_names_from_nodes(nodes, args.search_in)
     logging.info('Names extracted.')
     parts_of_speech = select_pos_from_names(names_in_lower_case, abbreviation_sets[args.part])
     unfolded_parts_of_speech = flat(parts_of_speech)
     return collections.Counter(unfolded_parts_of_speech).most_common(top_size)
 
+    # # this is from the final 1st homework pass without Path global variable
+    # nodes = generate_nodes_out_of_trees(get_trees(path))
+    # function_names_in_lower_case = select_function_names_from_nodes(nodes)
+    # logging.info('functions extracted')
+    # lists_of_verbs = select_verbs_from_function_names(function_names_in_lower_case)
+    # verbs = flat(lists_of_verbs)
+    # return collections.Counter(verbs).most_common(top_size)
+
+
+    # this is from the final 1st homework pass without Path global variable
+    # this is a new function for the 2nd homework
+    # its needed for compatibility
+def get_top_verbs_in_projects(projects):
+    """Return litst of tuples with words and their occurrence.
+
+    Keyword arguments:
+    projects -- list of path strings.
+
+    The return type is `list`.
+    """
+    words = []
+    for project in projects:
+        path = os.path.join('.', project)
+        words += get_top_verbs_in_path(path)
+    return words
+
+
+    # this is from the final 1st homework pass without Path global variable
+    # this is a new function for the 2nd homework
+    # its needed for compatibility
+def report_into_log(words, top_size=200):
+    """Writes a formatted report into log.
+
+    Keyword arguments:
+    words -- list of tuples: (wordname, quantity)
+    top_size -- Limiting the max number of words.
+    """
+    logging.info('total %s words, %s unique' % (len(words), len(set(words))))
+    for word, occurence in collections.Counter(words).most_common(top_size):
+        logging.info('{}, {}'.format(word, occurence))
 
 def main():
     logging.debug(parser)
@@ -212,7 +268,7 @@ def main():
 
     if args.clear:
         delete_repos_directories()
-    
+
     if args.clone:
         clone_all()
 
