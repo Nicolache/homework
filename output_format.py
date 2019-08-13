@@ -3,26 +3,26 @@ import csv
 import json
 
 from command_line_arguments import args
-from variables import logging, top_size
+from variables import logging
 
 
 def console_json_csv_output(wds):
     logging.debug(args)
     if args.report_format == 'console':
         print('total %s words, %s unique' % (len(wds), len(set(wds))))
-        for word, occurence in collections.Counter(wds).most_common(top_size):
+        for word, occurence in collections.Counter(wds).most_common():
             print(word, occurence)
 
     if args.report_format == 'json':
         dict_for_json = {}
-        for word, occurence in collections.Counter(wds).most_common(top_size):
+        for word, occurence in collections.Counter(wds).most_common():
             dict_for_json.update({word[0]: (word[1], occurence)})
         with open(args.output, "w") as write_file:
             json.dump(dict_for_json, write_file)
 
     if args.report_format == 'csv':
         list_for_csv = []
-        for word, occurence in collections.Counter(wds).most_common(top_size):
+        for word, occurence in collections.Counter(wds).most_common():
             list_for_csv.append([word[0], word[1], occurence])
         with open(args.output, "w") as write_file:
             writer = csv.writer(write_file, delimiter=',')

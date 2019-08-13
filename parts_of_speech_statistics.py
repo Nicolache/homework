@@ -10,21 +10,6 @@ from output_format import *
 from variables import *
 
 
-# this was moved into variables.py file
-# canstant variables renaming is needed in that file
-# MAXFILENAMES = 100
-# LOG_PATH_NAME = './logs.log'
-# LOGLEVEL = logging.INFO
-# # LOGLEVEL = logging.DEBUG
-# logger = logging.getLogger("")
-# logger.setLevel(LOGLEVEL)
-# logging.basicConfig(
-#     filename=LOG_PATH_NAME,
-#     level=LOGLEVEL,
-#     format='%(asctime)s - %(levelname)s - %(message)s',
-# )
-
-
 def delete_repos_directories():
     for directory in os.listdir(repos_local_path):
         os.system('rm -rf ' + repos_local_path + '/' + directory)
@@ -44,16 +29,17 @@ def projects_list():
         yield os.path.join(repos_local_path, directory)
 
 
-def flat(folded_generator_with_verbs):
-    """Generating verbs with folded generators
+def flat(folded_generator_with_pos):
+    """Generating parts of speech with the help of folded generators
         ((1,2), (3,4)) -> (1, 2, 3, 4)
 
     Keyword arguments:
-    folded_generator_with_verbs -- generator of generators.
+    folded_generator_with_pos -- A folded generator with parts of speech.
+    It's a generator of generators.
 
     Returns a generator.
     """
-    for item in folded_generator_with_verbs:
+    for item in folded_generator_with_pos:
         for folded_item in item:
             yield folded_item
 
@@ -204,8 +190,9 @@ def select_pos_from_names(names_in_lower_case, abbreviations):
         yield get_poss_from_name(name, abbreviations)
 
 
-def get_top_verbs_in_path(path, top_size=10):
-    """Return litst of tuples with words and its occurrence.
+def get_top_pos_in_path(path, top_size=10):
+    """Get top parts of speech located in `path` paramerer.
+    Return litst of tuples with words and its occurrence.
 
     Keyword arguments:
     path -- A path string.
@@ -230,10 +217,7 @@ def get_top_verbs_in_path(path, top_size=10):
     # return collections.Counter(verbs).most_common(top_size)
 
 
-    # this is from the final 1st homework pass without Path global variable
-    # this is a new function for the 2nd homework
-    # its needed for compatibility
-def get_top_verbs_in_projects(projects):
+def get_top_pos_in_projects(projects):
     """Return litst of tuples with words and their occurrence.
 
     Keyword arguments:
@@ -244,23 +228,23 @@ def get_top_verbs_in_projects(projects):
     words = []
     for project in projects:
         path = os.path.join('.', project)
-        words += get_top_verbs_in_path(path)
+        words += get_top_pos_in_path(path)
     return words
 
 
-    # this is from the final 1st homework pass without Path global variable
-    # this is a new function for the 2nd homework
-    # its needed for compatibility
-def report_into_log(words, top_size=200):
-    """Writes a formatted report into log.
-
-    Keyword arguments:
-    words -- list of tuples: (wordname, quantity)
-    top_size -- Limiting the max number of words.
-    """
-    logging.info('total %s words, %s unique' % (len(words), len(set(words))))
-    for word, occurence in collections.Counter(words).most_common(top_size):
-        logging.info('{}, {}'.format(word, occurence))
+#     # this is from the final 1st homework pass without Path global variable
+#     # this is a new function for the 2nd homework
+#     # its needed for compatibility
+# def report_into_log(words, top_size=200):
+#     """Writes a formatted report into log.
+# 
+#     Keyword arguments:
+#     words -- list of tuples: (wordname, quantity)
+#     top_size -- Limiting the max number of words.
+#     """
+#     logging.info('total %s words, %s unique' % (len(words), len(set(words))))
+#     for word, occurence in collections.Counter(words).most_common(top_size):
+#         logging.info('{}, {}'.format(word, occurence))
 
 def main():
     logging.debug(parser)
@@ -273,10 +257,7 @@ def main():
         clone_all()
 
     projects = projects_list()
-    words = []
-    for path in projects:
-        words += get_top_verbs_in_path(path)
-
+    words = get_top_verbs_in_projects(projects)
     console_json_csv_output(words)
 
 
