@@ -6,11 +6,12 @@ from vcstools import get_vcs_client
 
 from command_line_arguments import args
 from output_format import console_json_csv_output
-from python_parsing import\
-    get_trees,\
-    generate_nodes_out_of_trees,\
-    select_variable_names_from_nodes,\
-    select_function_names_from_nodes
+from languages_parsers import choose_language_class
+# from languages_parsers import\
+#     get_trees,\
+#     generate_nodes_out_of_trees,\
+#     select_variable_names_from_nodes,\
+#     select_function_names_from_nodes
 from variables import repos_local_path, logging, abbreviation_sets
 
 
@@ -107,6 +108,7 @@ def select_names_from_nodes(nodes, search_in):
     Returns a generator of function, or variable names from all the nodes.
     """
     if search_in == 'functions':
+        # names = select_function_names_from_nodes(nodes)
         names = select_function_names_from_nodes(nodes)
     if search_in == 'variables':
         names = select_variable_names_from_nodes(nodes)
@@ -140,7 +142,11 @@ def get_top_pos_in_path(path, top_size=10):
 
     The return type is `list`.
     """
-    nodes = generate_nodes_out_of_trees(get_trees(path))
+    # nodes = generate_nodes_out_of_trees(get_trees(path))
+    languageclass = choose_language_class(args.language)
+    nodes = languageclass.generate_nodes_out_of_trees()
+        # choose_language_classargs.language).get_trees(path)
+    # )
     names_in_lower_case = select_names_from_nodes(nodes, args.search_in)
     logging.info('Names extracted.')
     parts_of_speech = select_pos_from_names(

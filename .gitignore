@@ -1,9 +1,9 @@
 *
 !.gitignore
 !command_line_arguments.py
+!languages_parsers.py
 !output_format.py
 !parts_of_speech_statistics.py
-!python_parsing.py
 !requirements.txt
 !tasklist.md
 !variables.py
