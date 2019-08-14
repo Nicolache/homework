@@ -7,6 +7,12 @@ from variables import logging
 
 
 def console_json_csv_output(wds):
+    """Saves data in one of the formats. The formats may be add
+    in the future.
+
+    Keyword arguments:
+    wds -- a list of tuples of words, and their occurence.
+    """
     logging.debug(args)
     if args.report_format == 'console':
         print('total %s words, %s unique' % (len(wds), len(set(wds))))

@@ -15,22 +15,37 @@ from variables import repos_local_path, logging, abbreviation_sets
 
 
 def delete_repos_directories():
+    """Deletes all the folders and their contents in `repos_local_path`
+    location.
+    """
     for directory in os.listdir(repos_local_path):
         os.system('rm -rf ' + repos_local_path + '/' + directory)
 
 
 def repo_clone(https_url, vcs_type):
+    """Cloning a specified repository url, with a specified repo type
+    into a `repos_local_path directory`, creating subdirectory by a repo name.
+
+    Keyword arguments:
+    https_url -- a string of repository url.
+    vcs_type -- a string of a type of a repository, such as: git, svn, hg.
+    """
     reponame = https_url.rsplit('/', 1)[1]
     client = get_vcs_client(vcs_type, repos_local_path + reponame)
     client.checkout(https_url)
 
 
 def clone_all():
+    """Executes cloning of each repository by `repos_to_clone_urls` plenty.
+    """
     for url_and_vcstype in repos_to_clone_urls:
         repo_clone(url_and_vcstype[0], url_and_vcstype[1])
 
 
 def projects_list():
+    """It consideres each directory in `repos_local_path` location as
+    a single repository.
+    """
     for directory in os.listdir(repos_local_path):
         yield os.path.join(repos_local_path, directory)
 
@@ -51,6 +66,16 @@ def flat(folded_generator_with_pos):
 
 
 def word_belongs_to_parts_of_speech(word, abbreviations):
+    """Checks if a word belongs to a part of speech that is passed
+    in `abbreviations`.
+
+    Keyword arguments:
+    word -- a string that contains a word to check.
+    abbreviations --  A list of abbreviations that is used by nltk module.
+    Codes of parts of speech in their different forms.
+
+    The return type is `bool`.
+    """
     if not word:
         return False
     pos_info = pos_tag([word])
@@ -63,7 +88,8 @@ def get_poss_from_name(name, abbreviations):
     Keyword arguments:
     name -- A string that contains a function name,
     or a variable name, or etc. .
-    abbreviations -- Codes of parts of speech in their different forms.
+    abbreviations --  A list of abbreviations that is used by nltk module.
+    Codes of parts of speech in their different forms.
 
     Returns a generator.
     """
@@ -94,7 +120,8 @@ def select_pos_from_names(names_in_lower_case, abbreviations):
     Keyword arguments:
     names_in_lower_case -- Names of variables, or functions,
     or etc. in a programming code.
-    abbreviations -- Codes of parts of speech in their different forms.
+    abbreviations --  A list of abbreviations that is used by nltk module.
+    Codes of parts of speech in their different forms.
 
     Returns a generator.
     """
@@ -140,6 +167,9 @@ def get_top_pos_in_projects(projects):
 
 
 def main():
+    """Executes repositories directories search, statistics gathering,
+    and report in one of chosen formats.
+    """
     logging.debug(args)
 
     if args.clear:
